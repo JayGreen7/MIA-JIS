@@ -1,6 +1,25 @@
-function output = simulateJourney(dist_km,ship_type,fuel_type,prod_method,deadweight,speed,elec,bio)
+function output = simulateJourney(input)
 
-    %input = jsondecode(input);
+    %dist_km,ship_type,fuel_type,prod_method,deadweight,speed,elec,bio
+    input = jsondecode(input);
+
+    output.Origin = input.Origin;
+    output.Destination = input.Destination;
+    output.BaseParameterList = input.BaseParameterList;
+    output.TechnologyList = input.TechnologyList;
+    output.SettingsList = input.SettingsList;
+
+    dist_km = computeDistance(input.Origin.name,input.Destination.name);
+    ship_type = 'Oil Tanker'; %Need to implement input on front end for this
+    idx_fuel = find(strcmp({input.SettingsList(:).Name}, 'Fuel'));
+    fuel_type = input.SettingsList(idx_fuel).Values(1);
+    idx_fpro = find(strcmp({input.SettingsList(:).Name}, 'Fuel_prod'));
+    prod_method = input.SettingsList(idx_fpro).Values(1);
+    idx_elec = find(strcmp({input.SettingsList(:).Name}, 'Electricity'));
+    elec = input.SettingsList(idx_elec).Values(1);
+    bio = 'None Required'; %Need to implement input on front end for this
+    deadweight = 122666; %Need to implement input on front end for this
+    speed = 20; %Need to implement input on front end for this
 
     solutions = struct;
     solutions.('Route') = [];
@@ -247,11 +266,22 @@ function output = simulateJourney(dist_km,ship_type,fuel_type,prod_method,deadwe
     % = data3(4)*dist_km*scale_factor*(1/7140);
     solutions_fossil.('Cost') = fossil_data1(5)*dist_km*0.001*scale_factor;
     solutions_fossil.('Distance') = dist_km;
-    solutions.('Time') = dist_km/(speed*1.852001*24);
+    solutions_fossil.('Time') = dist_km/(speed*1.852001*24);
 
     solutions=[solutions ; solutions_fossil];
 
-    output = solutions;
 
-    %output.OptimizationResult = solutions;
-    %output = jsonencode(output);
+    %Hard coded output to begin
+
+    output.OptimizationResult.BestResults.errorCode = 0;
+    output.OptimizationResult.BestResults.order = 1;
+    output.OptimizationResult.BestResults.distance = 5540;
+    output.OptimizationResult.BestResults.layover = 0;
+    output.OptimizationResult.BestResults.journey.origin.name = 'London Heathrow Airport';
+    output.OptimizationResult.BestResults.journey.origin.type = 'large_airport';
+    
+
+
+
+    output.OptimizationResult = solutions;
+    output = jsonencode(output);
